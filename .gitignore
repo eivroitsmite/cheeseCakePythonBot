@@ -1,0 +1,42 @@
+# Python bytecode files
+*.pyc
+*.pyo
+__pycache__/
+
+# Virtual environment folder
+venv/
+.env/
+.env.*
+
+# Ignore sensitive configuration files
+config.json
+config.yaml
+config.ini
+
+# Environment variables
+*.env
+
+# Logs and debug files
+*.log
+*.pid
+
+# Cache and IDE files
+*.cache
+*.DS_Store
+.vscode/
+.idea/
+
+# Packages
+*.egg
+*.egg-info/
+dist/
+build/
+
+# PyInstaller
+*.spec
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# macOS specific
+.DS_Store
