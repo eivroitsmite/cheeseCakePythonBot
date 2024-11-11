@@ -12,7 +12,15 @@ from responsehandler import ALLOWED_CHANNELS
 from booster import Giveaway
 from security import Security
 
+from dbconn import (
+    create_table,
+)
+
 load_dotenv()
+
+
+create_table()
+
 
 resH = ResponseHandler()
 gift = Giveaway()
@@ -31,6 +39,7 @@ OWNERS_ROLE_ID = 1240455108047671406
 BOOST_CHANNEL_ID = 1244336805462016070
 
 bot = commands.Bot(command_prefix='$', intents=intents)
+
 warnings = {}
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')

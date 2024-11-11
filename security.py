@@ -10,6 +10,16 @@ WELCOME_CHANNEL_ID = 1305164254797893703
 NOTICE_CHANNEL_ID = 1305164254797893703 
 NOTICE_MESSAGE = "You must get the 'Verified' role within 48 hours by sending the password I just DMed you in the notice channel."
 
+
+from dbconn import (
+    add_user,
+    get_user_by_id,
+    get_password_by_user_id,
+    get_join_time_by_user_id,
+    check_user_exists,
+    delete_user_by_id
+)
+
 user_join_time = {}
 user_passwords = {}  
 
@@ -25,13 +35,15 @@ class Security(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         password = self.generate_password()
-        user_passwords[member.id] = password
+        # user_passwords[member.id] = password
         unverified_role = discord.utils.get(member.guild.roles, id=UNVERIFIED_ROLE_ID)
         
         if unverified_role:
             await member.add_roles(unverified_role, reason="New member - assigned Unverified role")
 
-        user_join_time[member.id] = datetime.now()
+        add_user(member.id, datetime.now(), password)
+
+        # user_join_time[member.id] = datetime.now()
 
         try:
             await member.send(
@@ -54,7 +66,8 @@ class Security(commands.Cog):
 
         if message.channel.id == NOTICE_CHANNEL_ID:
             member_id = message.author.id
-            if member_id in user_passwords and message.content == user_passwords[member_id]:
+
+            if check_user_exists(member_id) and message.content == get_password_by_user_id(member_id):
              
                 verified_role = discord.utils.get(message.guild.roles, id=REQUIRED_ROLE_ID)
                 unverified_role = discord.utils.get(message.guild.roles, id=UNVERIFIED_ROLE_ID)
@@ -66,26 +79,24 @@ class Security(commands.Cog):
 
                 await message.channel.send(f"{message.author.mention} has been verified successfully!")
                 
-                del user_passwords[member_id]
-                if member_id in user_join_time:
-                    del user_join_time[member_id]
+                delete_user_by_id(member_id)
 
     @tasks.loop(minutes=60)
     async def check_roles(self):
         for guild in self.bot.guilds:
             for member in guild.members:
-                if member.id in user_join_time:
-                    join_time = user_join_time[member.id]
-                    time_since_join = datetime.now() - join_time
+                if check_user_exists(member.id):
+                    join_time = get_join_time_by_user_id(member.id)
+                    if isinstance(join_time, str):
+                        join_time = datetime.strptime(join_time, '%Y-%m-%d %H:%M:%S')
+                        time_since_join = datetime.now() - join_time
 
                     if time_since_join >= timedelta(hours=48):
                         required_role = discord.utils.get(guild.roles, id=REQUIRED_ROLE_ID)
                         if required_role not in member.roles:
                             try:
                                 await member.kick(reason="Failed to get required role within 48 hours.")
-                                del user_join_time[member.id] 
-                                if member.id in user_passwords:
-                                    del user_passwords[member.id]
+                                delete_user_by_id(member.id)
                             except discord.Forbidden:
                                 print(f"Cannot kick {member.name}; insufficient permissions.")
                             except discord.HTTPException as e:
@@ -93,10 +104,7 @@ class Security(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        if member.id in user_join_time:
-            del user_join_time[member.id]
-        if member.id in user_passwords:
-            del user_passwords[member.id]
+        delete_user_by_id(member.id)
 
     def cog_unload(self):
         self.check_roles.cancel()
