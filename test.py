@@ -1,7 +1,6 @@
 from datetime import datetime
 from uuid import uuid4
 
-# Import functions from your module (replace `your_module` with the actual module name)
 from dbconn import (
     create_table,
     add_user,
@@ -22,7 +21,7 @@ def test_create_table():
 def test_add_user():
     """Test adding a user to the database."""
     try:
-        user_id = str(uuid4())  # Generate a unique user ID
+        user_id = str(uuid4())  
         join_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         password = "test_password"
         add_user(user_id, join_time, password)
@@ -59,7 +58,6 @@ def test_get_join_time_by_user_id(user_id, expected_join_time):
     try:
         join_time = get_join_time_by_user_id(user_id)
         
-        # Convert join_time to datetime if it is a string
         if isinstance(join_time, str):
             join_time = datetime.strptime(join_time, '%Y-%m-%d %H:%M:%S')
 
