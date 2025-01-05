@@ -9,17 +9,9 @@ import sys, traceback
 
 from responsehandler import ResponseHandler
 from responsehandler import ALLOWED_CHANNELS
-from booster import Giveaway
-from security import Security
-
-from dbconn import (
-    create_table,
-)
+from giveaway import Giveaway
 
 load_dotenv()
-
-
-create_table()
 
 
 resH = ResponseHandler()
@@ -54,7 +46,6 @@ async def on_ready():
         if(filename.endswith('.py')): 
             print("Cog : " + filename[:-3] + " has been loaded")
             await bot.load_extension(f"cogs.{filename[:-3]}")
-            await bot.add_cog(Security(bot))
     
 
 @bot.event
